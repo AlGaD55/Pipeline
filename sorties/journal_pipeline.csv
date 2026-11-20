@@ -1,0 +1,4 @@
+﻿fichier;etape;outil;secondes
+01_init.sql;Reinitialiser la base;SQL;71,8
+02_clean.sql;Construire la couche propre;SQL;15,9
+03_tables_meteo.sql;Creer les tables qui attendent la meteo;SQL;0,0

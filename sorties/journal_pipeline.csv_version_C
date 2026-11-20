@@ -1,0 +1,7 @@
+﻿fichier;etape;outil;secondes
+01_init.sql;Reinitialiser la base;SQL;69,6
+02_clean.sql;Construire la couche propre;SQL;15,2
+03_tables_meteo.sql;Creer les tables qui attendent la meteo;SQL;0,0
+04_rattachement.sql;Rattacher les points meteo aux villes;SQL;0,1
+05_croisement.sql;Croise les sinistres avec la meteo;SQL;0,1
+06_controles.sql;Controle le rapprochement;SQL;0,0
