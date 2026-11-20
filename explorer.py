@@ -185,7 +185,7 @@ df["date_declaration"] = pd.to_datetime(df["date_declaration"])
 # Exercice 2
 #-------------
 
-print(df.shape)
+#print(df.shape)
 #print(df.head())
 #print(df.isna().sum())
 #df["type_sinistre"].describe()
