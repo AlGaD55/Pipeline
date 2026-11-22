@@ -1,4 +1,4 @@
-
+# ce script analyse les donnees d'assurance et croise ces donnees avec celles de la meteo. 
 
 import psycopg2
 from getpass import getpass
