@@ -96,6 +96,23 @@ df["date_declaration"] = pd.to_datetime(df["date_declaration"])
 # print(montant_min)
 # print(montant_max)
 
+print(df.shape)
+print()
+print(df.isna().sum())
+print()
+print(df["montant_estime"].describe())
+print()
+print(df["type_sinistre"].value_counts())
+print()
+print("la moyenne de la franchise")
+print(df["franchise"].mean())
+print()
+print("Le mediane de la franchise")
+print(df["franchise"].median())
+
+# print(df.groupby("type_sinistre")["franchise"].agg(["mean", "median"]))
+# print(df.groupby("type_sinistre")["montant_estime"].agg(["mean", "median"]))
+
 
 # 80.0
 # 49912.0
@@ -193,3 +210,131 @@ df["date_declaration"] = pd.to_datetime(df["date_declaration"])
 # df.groupby("type_sinistre")["montant_estime"].agg(["count","mean","median"])\
 # .sort_values("median",ascending=False)
 # print(df)
+
+print(df["type_sinistre"].value_counts(normalize=True).mul(100).round(1))
+
+print()
+print()
+
+print("verification hypothese groupee")
+part = (df.groupby("ville_sinistre")["type_sinistre"]
+          .apply(lambda s: s.value_counts(normalize=True).mul(100).round(1)))
+print(part.xs("Dégât des eaux", level=1).describe())
+
+print()
+print()
+
+print("Lille")
+lille = df[df["ville_sinistre"]=="lille"]
+print(lille["type_sinistre"].value_counts(normalize=True).mul(100).round(1))
+
+print()
+print("Metz")
+Metz = df[df["ville_sinistre"]=="Metz"]
+print(Metz["type_sinistre"].value_counts(normalize=True).mul(100).round(1))
+
+print()
+print()
+
+print("Nice")
+Nice = df[df["ville_sinistre"]=="Nice"]
+print(Nice["type_sinistre"].value_counts(normalize=True).mul(100).round(1))
+
+
+print()
+print()
+
+print("Rennes")
+Rennes = df[df["ville_sinistre"]=="Rennes"]
+print(Rennes["type_sinistre"].value_counts(normalize=True).mul(100).round(1))
+
+print()
+print()
+print("Enquetes octobre")
+
+
+octobre = df[(df["date_survenance"] >= "2025-10-01") & 
+             (df["date_survenance"] <= "2025-10-31")]
+reste = df[~df.index.isin(octobre.index)]
+
+# Vérification des effectifs (doit afficher 1940 et 10158)
+print(len(octobre), len(reste))
+
+#Étape 2 : Comparer les proportions (%) de chaque type de sinistre
+# Calcul des parts en % pour octobre et pour le reste
+octobre_pct = octobre["type_sinistre"].value_counts(normalize=True).mul(100).round(1)
+reste_pct = reste["type_sinistre"].value_counts(normalize=True).mul(100).round(1)
+
+# Tableau comparatif côte à côte
+comparaison_types = pd.DataFrame({
+    "Octobre 2025 (%)": octobre_pct,
+    "Reste de l'année (%)": reste_pct
+})
+print("comparaison_types",comparaison_types)
+
+# 2. Comparaison des statistiques météo (moyenne, max, quartiles)
+
+print("--- Métriques météo en Octobre 2025 ---")
+print(octobre[["precipitation_sum", "wind_gusts_10m_max"]].describe())
+
+print("\n--- Métriques météo le Reste de l'année ---")
+print(reste[["precipitation_sum", "wind_gusts_10m_max"]].describe())
+
+# Exploration du Point 3 : La distribution jour par jour
+
+# Comptage du nombre de sinistres par jour du mois (du 1er au 31 octobre)
+
+par_jour = octobre.groupby(octobre["date_survenance"].dt.day).size()
+
+print("--- Nombre de sinistres par jour en octobre ---")
+print(par_jour)
+
+print("\n--- Statistiques sur la distribution quotidienne ---")
+print(par_jour.describe())
+
+# Exploration du Point bonus : comparaison geographique repartition par region
+
+#  Calcul des parts (%) par région
+octobre_reg = octobre["region_sinistre"].value_counts(normalize=True).mul(100).round(1)
+reste_reg = reste["region_sinistre"].value_counts(normalize=True).mul(100).round(1)
+
+#  Tableau comparatif
+comparaison_regions = pd.DataFrame({
+    "Octobre 2025 (%)": octobre_reg,
+    "Reste de l'année (%)": reste_reg
+})
+print(comparaison_regions)
+
+
+
+# Mercredi 18 Novembre Exercice 2
+#--------------------------------
+
+# Enquete personnelle : choix date declaration
+
+###  ** Calcul du délai en jours entre la survenance et la déclaration
+delai = (df["date_declaration"] - df["date_survenance"]).dt.days
+print()
+print()
+print("calcul des delais")
+print(delai.describe())
+
+### **2. Ce qu'il faut observer dans les résultats**
+
+# calcul des delais
+#---------------------
+
+# count    12098.000000
+# mean        13.867664
+# std          7.847060
+# min          1.000000
+# 25%          7.000000
+# 50%         14.000000
+# 75%         21.000000
+# max         27.000000
+
+print()
+print()
+
+print(df[["montant_estime", "precipitation_sum", 
+    "wind_gusts_10m_max", "temperature_2m_max"]].corr())

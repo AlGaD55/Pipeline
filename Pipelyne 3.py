@@ -18,26 +18,27 @@ os.makedirs("sorties", exist_ok=True)
 ## Connexion à la base de donnée Dbeaver
 #==========================================
 
-#mot_de_passe = getpass("Mot de passe PostgreSQL : ")
-#mot_de_passe = getpass("Mot de passe PostgreSQL : ").encode().decode("utf-8")
+
 mot_de_passe = getpass("Mot de passe PostgreSQL : ").encode('cp1252').decode('utf-8', errors='ignore')
 
-#connexion = psycopg2.connect(host="localhost", port=5432, dbname="Assurrisk 018",
-#user="postgres", password=mot_de_passe)
-connexion = psycopg2.connect(
-    "dbname=Assurrisk017 user=postgres password=2109@&372 host=localhost port=5432 client_encoding=utf8")
+connexion = psycopg2.connect(host="localhost", port=5432, dbname="Assurrisk 018",
+user="postgres", password=mot_de_passe)
+
 connexion.autocommit = True
 curseur = connexion.cursor()
 print("connexion ouverte")
+
+def noter(fichier, libelle, outil, debut):
+    duree = round(time.time() - debut, 1)
+    journal.append([fichier, libelle, outil, duree, "ok"])
+    print(f" [{outil}] {libelle} - {duree} s")
 
 def jouer_sql(fichier,libelle):
     #for fichier, libelle in etapes_1:
     debut = time.time ()
     requete = open("sql/" + fichier, encoding="utf-8").read()
     curseur.execute(requete)
-    duree=round(time.time() - debut,1)
-    journal.append([fichier,libelle,"SQL",duree])
-    print(" [SQL]", libelle,"-",duree, "s")
+    noter(fichier, libelle, "SQL", debut)
 
 def charger_dans_Postgres(tableau,nom_de_table):
     tampon = io.StringIO()
@@ -46,9 +47,10 @@ def charger_dans_Postgres(tableau,nom_de_table):
     curseur.copy_expert("COPY " + nom_de_table + " FROM STDIN WITH (FORMAT csv)", tampon)
 
 
-requete = open("sql/01_init.sql", encoding="utf-8").read()
-curseur.execute(requete)
-print("base reinitialisee")
+
+# requete = open("sql/01_init.sql", encoding="utf-8").read()
+# curseur.execute(requete)
+# print("base reinitialisee")
 
 
 
@@ -56,6 +58,8 @@ print("base reinitialisee")
 #===============================================
 ## Execution des scripts SQL 01 à 03
 #===============================================
+
+
 
 journal = []
 
@@ -68,9 +72,6 @@ etapes_1 = [
 
 for fichier, libelle in etapes_1:
     jouer_sql(fichier,libelle)
-
-
-
 
 
 
@@ -99,10 +100,7 @@ print(meteo.shape)
 ## 002 Copie du fichier json dans la table meteo_assurrisk
 
 charger_dans_Postgres(meteo, "meteo_assurrisk")
-# tampon = io.StringIO()
-# meteo.to_csv(tampon, index=False, header=False)
-# tampon.seek(0)
-# curseur.copy_expert("COPY meteo_assurrisk FROM STDIN WITH (FORMAT csv)", tampon)
+
 
 print(" [PYTHON]", len(meteo), "lignes de meteo chargees")
 
@@ -113,10 +111,7 @@ print(villes.shape)
 
 
 charger_dans_Postgres(villes, "villes_coordonnees_meteo")
-# tampon = io.StringIO ()
-# ville.to_csv(tampon,index=False,header=False)
-# tampon.seek(0)
-# curseur.copy_expert("COPY villes_coordonnees_meteo FROM STDIN WITH (FORMAT csv)",tampon)
+
 
 print("[PYTHON]", len(villes),"lignes chargees")
 
@@ -136,29 +131,15 @@ for fichier, libelle in etapes_2:
     jouer_sql(fichier,libelle)
 
 
-    # debut = time.time()
-    # requete = open("sql/" + fichier, encoding="utf-8").read()
-    # curseur.execute(requete)
-    # duree = round(time.time() - debut, 1)
-    # journal.append([fichier, libelle, "SQL", duree])
-    # print(" [SQL]", libelle, "-", duree, "s")
 
 
-## Controle verification bonne execution sql
-
-    if fichier == "02_clean.sql":
-        verification = pd.read_sql(
-        "SELECT count(*) AS n FROM clean_fact_sinistre", connexion)
-        print(" [CONTRÔLE] clean_fact_sinistre =", verification["n"][0], "lignes")
-
-    
 
 #===========================================
 ## Creation de fichier journal du Pipeline
 #===========================================
 
-suivi = pd.DataFrame(journal, columns=["fichier", "etape", "outil", "secondes"])
-suivi.to_csv("sorties/journal_pipeline.csv_version_finale_extra", sep=";", decimal=",",
+suivi = pd.DataFrame(journal, columns=["fichier", "etape", "outil", "secondes", "statut"])
+suivi.to_csv("sorties/journal_pipeline.csv_du21112026", sep=";", decimal=",",
 index=False, encoding="utf-8-sig")
 
 
@@ -178,38 +159,20 @@ controles = pd.read_sql("""
 """, connexion)
 
 print()
-# print("CONTROLES")
-# for colonne in controles.columns:
-#     print("   ", colonne, ":", controles[colonne][0])
 
 
 
 print("\nCONTROLES")
 print(tabulate(controles, headers="keys", tablefmt="psql", showindex=False))
 
+
 #=============================================
 ## Creation du fichier journal controle csv
 #=============================================
 
 
-controles.to_csv("sorties/controles.csv_version_finale", sep=";", decimal=",",
+controles.to_csv("sorties/controles.csv_21112026", sep=";", decimal=",",
                  index=False, encoding="utf-8-sig")
 
 curseur.close()
 connexion.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# verification = pd.read_sql("SELECT count(*) AS n FROM clean_fact_sinistre", connexion)
-# print(" controle : clean_fact_sinistre =", verification["n"][0], "lignes")
