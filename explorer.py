@@ -335,3 +335,5 @@ print()
 
 print(df[["montant_estime", "precipitation_sum", 
     "wind_gusts_10m_max", "temperature_2m_max"]].corr())
+
+print()
