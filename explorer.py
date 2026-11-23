@@ -44,10 +44,7 @@ import psycopg2
 connexion = psycopg2.connect(host="localhost", port=5432, dbname="Assurrisk010",
 user="postgres", password=mot_de_passe)
 
-# connexion.autocommit = True
-# connexion = psycopg2.connect(
-#     "dbname=Assurrisk017 user=postgres password=2109@&372 host=localhost port=5432 client_encoding=utf8"
-# )
+
 df = pd.read_sql("SELECT * FROM fact_sinistre_meteo", connexion)
 df["montant_estime"] = df["montant_estime"].astype(float)
 df["franchise"] = df["franchise"].astype(float)
@@ -176,7 +173,7 @@ print(df["franchise"].median())
 
 
 # Observations : au niveau global la moyenne est supérieur à la médiane, ce qui signifie
-#qu'il existe des valeurs extremes qui la tirent à la hausse. Mais dans le détail, la moyenne et médianne 
+#qu'il existe des valeurs extremes qui la tirent à la hausse. Mais dans l'analyse par type, la moyenne et médianne 
 # sont équivalentes
 
 # stat_montant_estime = df.groupby("type_sinistre")["montant_estime"].agg(
